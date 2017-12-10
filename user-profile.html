@@ -1,0 +1,114 @@
+<template id="user-profile-from-template">
+  <content>
+    <span id="state"></span>
+    <p id="fullName">FirstName LastName</p>
+  </content>
+</template>
+
+<script>
+  //this only works when polymer is loaded //cdnjs.cloudflare.com/ajax/libs/polymer/0.3.4/platform.js
+  //otherwise above <template> would need to be in parent file that's importing this one
+  var doc = this.document._currentScript.ownerDocument;
+
+  class UserProfile extends HTMLElement {
+    static get observedAttributes() {
+      return ['disabled', 'open', 'user'];
+    }
+    // A getter/setter for an open property.
+    get open() {
+      return this.hasAttribute('open');
+    }
+
+    set open(val) {
+      // Reflect the value of the open property as an HTML attribute.
+      if (val) {
+        this.setAttribute('open', '');
+      } else {
+        this.removeAttribute('open');
+      }
+      this.toggleState();
+    }
+
+    makeOpen() {
+      this.setAttribute('open', '');
+    }
+
+    close() {
+      this.removeAttribute('open');
+    }
+
+    // A getter/setter for a disabled property.
+    get disabled() {
+      return this.hasAttribute('disabled');
+    }
+
+    set disabled(val) {
+      // Reflect the value of the disabled property as an HTML attribute.
+      if (val) {
+        this.setAttribute('disabled', '');
+      } else {
+        this.removeAttribute('disabled');
+      }
+    }
+
+    // Only called for the disabled and open attributes due to observedAttributes
+    attributeChangedCallback(name, oldValue, newValue) {
+      // When the component is disabled, update keyboard/screen reader behavior.
+      if (this.disabled) {
+        this.setAttribute('tabindex', '-1');
+        this.setAttribute('aria-disabled', 'true');
+      } else {
+        this.setAttribute('tabindex', '0');
+        this.setAttribute('aria-disabled', 'false');
+      }
+      if (name === 'user' && newValue !=='') {
+        this.user_ = JSON.parse(newValue);
+        this._redrawView(this);
+      }
+    }
+
+    // Can define constructor arguments if you wish.
+    constructor() {
+      // If you define a ctor, always call super() first!
+      // This is specific to CE and required by the spec.
+      super();
+
+      //attach shadow dom
+      this.attachShadow({mode: 'open'});
+      //create new node from template
+      let content = doc.querySelector('#user-profile-from-template').content;
+      //attach node to shadowRoot
+      this.shadowRoot.appendChild(content.cloneNode(true));
+
+      // Setup a click listener on <app-component> itself.
+      this.addEventListener('click', e => {
+        // Don't toggle the component if it's disabled.
+        if (this.disabled) {
+          return;
+        }
+        this.toggleState();
+      });
+    }
+
+    toggleState() {
+      if (this._isOpen(this)) {
+        this.close();
+      } else {
+        this.makeOpen();
+      }
+      this._redrawView(this);
+    }
+
+    _isOpen(component) {
+      return component.hasAttribute('open');
+    }
+
+    _redrawView(component) {
+      let state = component.shadowRoot.querySelector('#state');
+      state.innerHTML = this._isOpen(component) ? 'Open' : 'Closed';
+      let p = component.shadowRoot.querySelector('#fullName');
+      p.innerHTML = component.user_.firstName + ' ' + component.user_.lastName;
+    }
+  }
+  window.customElements.define('user-profile', UserProfile);
+</script>
