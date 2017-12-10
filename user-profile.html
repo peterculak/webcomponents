@@ -63,7 +63,7 @@
       }
       if (name === 'user' && newValue !=='') {
         this.user_ = JSON.parse(newValue);
-        this._redrawView(this);
+        this._redrawView();
       }
     }
 
@@ -91,23 +91,23 @@
     }
 
     toggleState() {
-      if (this._isOpen(this)) {
+      if (this._isOpen()) {
         this.close();
       } else {
         this.makeOpen();
       }
-      this._redrawView(this);
+      this._redrawView();
     }
 
-    _isOpen(component) {
-      return component.hasAttribute('open');
+    _isOpen() {
+      return this.hasAttribute('open');
     }
 
-    _redrawView(component) {
-      let state = component.shadowRoot.querySelector('#state');
-      state.innerHTML = this._isOpen(component) ? 'Open' : 'Closed';
-      let p = component.shadowRoot.querySelector('#fullName');
-      p.innerHTML = component.user_.firstName + ' ' + component.user_.lastName;
+    _redrawView() {
+      let state = this.shadowRoot.querySelector('#state');
+      state.innerHTML = this._isOpen() ? 'Open' : 'Closed';
+      let p = this.shadowRoot.querySelector('#fullName');
+      p.innerHTML = this.user_.firstName + ' ' + this.user_.lastName;
     }
   }
   window.customElements.define('user-profile', UserProfile);
